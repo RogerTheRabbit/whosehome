@@ -21,7 +21,7 @@ app.get("/", async (req, res) => {
     USERS[user] === undefined ||
     USERS[user] === null
   ) {
-    res
+    return res
       .status(404)
       .send(
         `Unknown user: ${user}. Make sure you are setting the ?user=[NAME] query param`
