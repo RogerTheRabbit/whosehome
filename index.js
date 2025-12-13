@@ -27,24 +27,28 @@ app.get("/", async (req, res) => {
         `Unknown user: ${user}. Make sure you are setting the ?user=[NAME] query param`
       );
   }
+
   let result;
   try {
-    result = (
-      await fetch(
-        `${process.env.UNIFI_SCHEME}${process.env.UNIFI_DOMAIN}/proxy/network/integration/v1/sites/${process.env.UNIFI_SITE_ID}/clients/${USERS[user]}`,
-        {
-          headers: {
-            "X-API-KEY": process.env.UNIFI_API_KEY,
-          },
-        }
-      )
-    ).status;
+    result = await fetch(
+      `${process.env.UNIFI_SCHEME}${process.env.UNIFI_DOMAIN}/proxy/network/integration/v1/sites/${process.env.UNIFI_SITE_ID}/clients?limit=100`,
+      {
+        headers: {
+          "X-API-KEY": process.env.UNIFI_API_KEY,
+        },
+      }
+    );
   } catch (err) {
-    console.log(err);
+    console.log("Failed fetching clients:", err);
     return res.sendStatus(500);
   }
 
-  res.send(result === 200);
+  let devices = await result.json();
+  let onlineDevices = devices.data.filter((device) =>
+    USERS[user].includes(device.id)
+  );
+
+  res.send(onlineDevices.length > 0);
 });
 
 app.listen(port, () => {
