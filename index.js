@@ -43,7 +43,7 @@ app.get("/", async (req, res) => {
 
   let devices = await result.json();
   let onlineDevices = devices.data.filter((device) =>
-    USERS[user].includes(device.id),
+    USERS[user].deviceIds.includes(device.id),
   );
 
   res.send(onlineDevices.length > 0);
@@ -61,9 +61,14 @@ app.get("/all", async (req, res) => {
   let devices = await result.json();
   let onlineDevices = devices.data.map((device) => device.id);
   let resp = {};
-  Object.entries(USERS).forEach(([name, deviceIds]) => {
-    let online = deviceIds.some((deviceId) => onlineDevices.includes(deviceId));
-    resp[name] = online ? STATUS.ONLINE : STATUS.OFFLINE;
+  Object.entries(USERS).forEach(([name, users]) => {
+    let online = users.deviceIds.some((deviceId) =>
+      onlineDevices.includes(deviceId),
+    );
+    resp[name] = {
+      status: online ? STATUS.ONLINE : STATUS.OFFLINE,
+      color: `#${USERS[name].color}`,
+    };
   });
 
   res.send(resp);
